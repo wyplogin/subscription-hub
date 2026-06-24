@@ -44,6 +44,29 @@ npm run init
 - 分流模板地址
 - 转换输入模式：直接用机场链接，或先下载到 VPS 再转换
 
+### Surge 转换参数示例
+
+如果官方示例是这种完整地址：
+
+```text
+https://api.v1.mk/sub?target=surge&ver=4&url=http%3A%2F%2Fwww.example.com%2Fexam.yaml&insert=false&config=https%3A%2F%2Fraw.githubusercontent.com%2FACL4SSR%2FACL4SSR%2Fmaster%2FClash%2Fconfig%2FACL4SSR_Online_Full_NoAuto.ini&emoji=true&list=false&xudp=false&udp=false&tfo=false&expand=true&scv=false&fdn=false&diyua=ShadowRocket
+```
+
+后台里不要把整条都填进“订阅转换地址”。推荐拆成这样：
+
+```text
+订阅转换地址：
+https://api.v1.mk/sub
+
+分流模板地址：
+https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Full_NoAuto.ini
+
+Surge AnyTLS -> 单独转换参数：
+ver=4&insert=false&emoji=true&list=false&xudp=false&udp=false&tfo=false&expand=true&scv=false&fdn=false&diyua=ShadowRocket
+```
+
+`target=surge` 和 `url=你的机场订阅链接` 由程序自动生成，不需要手动填写。
+
 启动：
 
 ```bash

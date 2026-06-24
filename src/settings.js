@@ -9,6 +9,8 @@ const defaultProfiles = [
     subscriptionUrl: '',
     path: '/clash-ss.yaml',
     target: 'clash',
+    templateUrl: '',
+    extraParams: '',
   },
   {
     id: 'clash-anytls',
@@ -16,6 +18,8 @@ const defaultProfiles = [
     subscriptionUrl: '',
     path: '/clash-anytls.yaml',
     target: 'clash',
+    templateUrl: '',
+    extraParams: '',
   },
   {
     id: 'surge-anytls',
@@ -23,6 +27,8 @@ const defaultProfiles = [
     subscriptionUrl: '',
     path: '/surge-anytls.conf',
     target: 'surge',
+    templateUrl: '',
+    extraParams: 'ver=4&insert=false&emoji=true&list=false&xudp=false&udp=false&tfo=false&expand=true&scv=false&fdn=false&diyua=ShadowRocket',
   },
 ];
 
@@ -92,8 +98,9 @@ function sanitizeSettings(input = {}) {
 
 function sanitizeProfile(profile, index) {
   if (!profile || typeof profile !== 'object') return null;
-  const fallback = defaultProfiles[index] || {};
-  const id = normalizeProfileId(profile.id || fallback.id || `profile-${index + 1}`);
+  const indexedFallback = defaultProfiles[index] || {};
+  const id = normalizeProfileId(profile.id || indexedFallback.id || `profile-${index + 1}`);
+  const fallback = defaultProfiles.find((item) => item.id === id) || indexedFallback;
   const target = stringValue(profile.target, fallback.target || 'clash');
 
   return {
@@ -102,8 +109,8 @@ function sanitizeProfile(profile, index) {
     subscriptionUrl: stringValue(profile.subscriptionUrl || profile.url, fallback.subscriptionUrl || ''),
     path: normalizePublicPath(profile.path || profile.publicPath || fallback.path || defaultPublicPath(id, target)),
     target,
-    templateUrl: stringValue(profile.templateUrl, ''),
-    extraParams: stringValue(profile.extraParams, ''),
+    templateUrl: stringValue(profile.templateUrl, fallback.templateUrl || ''),
+    extraParams: stringValue(profile.extraParams, fallback.extraParams || '') || fallback.extraParams || '',
   };
 }
 

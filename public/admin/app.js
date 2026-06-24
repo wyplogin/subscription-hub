@@ -26,9 +26,34 @@ const defaultSettings = {
     extraParams: 'emoji=true&udp=true&list=false',
   },
   profiles: [
-    { id: 'clash-ss', name: 'Clash SS', subscriptionUrl: '', path: '/clash-ss.yaml', target: 'clash' },
-    { id: 'clash-anytls', name: 'Clash AnyTLS', subscriptionUrl: '', path: '/clash-anytls.yaml', target: 'clash' },
-    { id: 'surge-anytls', name: 'Surge AnyTLS', subscriptionUrl: '', path: '/surge-anytls.conf', target: 'surge' },
+    {
+      id: 'clash-ss',
+      name: 'Clash SS',
+      subscriptionUrl: '',
+      path: '/clash-ss.yaml',
+      target: 'clash',
+      templateUrl: '',
+      extraParams: '',
+    },
+    {
+      id: 'clash-anytls',
+      name: 'Clash AnyTLS',
+      subscriptionUrl: '',
+      path: '/clash-anytls.yaml',
+      target: 'clash',
+      templateUrl: '',
+      extraParams: '',
+    },
+    {
+      id: 'surge-anytls',
+      name: 'Surge AnyTLS',
+      subscriptionUrl: '',
+      path: '/surge-anytls.conf',
+      target: 'surge',
+      templateUrl: '',
+      extraParams:
+        'ver=4&insert=false&emoji=true&list=false&xudp=false&udp=false&tfo=false&expand=true&scv=false&fdn=false&diyua=ShadowRocket',
+    },
   ],
 };
 
@@ -230,6 +255,19 @@ function renderProfileEditor(profile) {
           </select>
         </label>
       </div>
+      <details class="advanced-settings"${profile.templateUrl || profile.extraParams ? ' open' : ''}>
+        <summary>单独转换参数</summary>
+        <div class="settings-grid compact">
+          <label>
+            <span>单独分流模板</span>
+            <input data-field="templateUrl" type="url" value="${escapeHtml(profile.templateUrl || '')}" placeholder="留空则使用上面的分流模板" />
+          </label>
+          <label>
+            <span>单独额外参数</span>
+            <textarea data-field="extraParams" rows="3" placeholder="例如 ver=4&diyua=ShadowRocket">${escapeHtml(profile.extraParams || '')}</textarea>
+          </label>
+        </div>
+      </details>
     </article>
   `;
 }
@@ -248,6 +286,8 @@ function collectSettings() {
       subscriptionUrl: valueOf(row, 'subscriptionUrl'),
       path: valueOf(row, 'path'),
       target: valueOf(row, 'target'),
+      templateUrl: valueOf(row, 'templateUrl'),
+      extraParams: valueOf(row, 'extraParams'),
     })),
   };
 }
