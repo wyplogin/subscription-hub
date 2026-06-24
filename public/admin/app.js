@@ -129,6 +129,17 @@ profilesListEl.addEventListener('click', async (event) => {
   }, 1200);
 });
 
+profilesEditorEl.addEventListener('input', (event) => {
+  const input = event.target.closest('[data-field="extraParams"]');
+  if (!input) return;
+
+  const row = input.closest('[data-profile-editor]');
+  const preview = row?.querySelector('[data-rule-preview]');
+  if (preview) {
+    preview.innerHTML = renderRulePreview(input.value);
+  }
+});
+
 setInterval(loadState, 15000);
 loadInitial();
 
@@ -289,8 +300,54 @@ function renderProfileEditor(profile) {
             <textarea data-field="extraParams" rows="3" placeholder="例如 ver=4&diyua=ShadowRocket">${escapeHtml(profile.extraParams || '')}</textarea>
           </label>
         </div>
+        <div class="rule-preview" data-rule-preview>
+          ${renderRulePreview(profile.extraParams || '')}
+        </div>
       </details>
     </article>
+  `;
+}
+
+function renderRulePreview(extraParams) {
+  const rules = decodeRuleParams(extraParams);
+  const rows = [];
+
+  if (rules.include) rows.push(rulePreviewRow('包含节点', rules.include));
+  if (rules.exclude) rows.push(rulePreviewRow('排除节点', rules.exclude));
+  if (rules.rename.length) {
+    rows.push(`
+      <div class="rule-preview-block">
+        <span>重命名正则</span>
+        <ol>${rules.rename.map((item) => `<li><code>${escapeHtml(item)}</code></li>`).join('')}</ol>
+      </div>
+    `);
+  }
+
+  return rows.length ? rows.join('') : '<p>没有单独筛选或重命名规则。</p>';
+}
+
+function decodeRuleParams(extraParams) {
+  const params = new URLSearchParams(extraParams || '');
+  return {
+    include: params.get('include') || '',
+    exclude: params.get('exclude') || '',
+    rename: splitRenameRules(params.get('rename') || ''),
+  };
+}
+
+function splitRenameRules(rename) {
+  return rename
+    .split('`')
+    .map((item) => item.trim())
+    .filter(Boolean);
+}
+
+function rulePreviewRow(label, value) {
+  return `
+    <div class="rule-preview-row">
+      <span>${escapeHtml(label)}</span>
+      <code>${escapeHtml(value)}</code>
+    </div>
   `;
 }
 

@@ -58,7 +58,7 @@ include=Premium&rename=%60Premium%40Pre%60
 exclude=%E6%98%9F%E9%93%BE%7C%E6%B8%B8%E6%88%8F%7C5G%7C%E5%AE%9E%E9%AA%8C&include=%E9%A6%99%E6%B8%AF%7C%E6%96%B0%E5%8A%A0%E5%9D%A1%7C%E6%97%A5%E6%9C%AC%7C%E7%BE%8E%E5%9B%BD&rename=...
 ```
 
-后台会自动把这些参数放到每条订阅的“单独转换参数”里。`target=clash` 和 `url=你的机场订阅链接` 由程序自动生成，不需要手动填写。
+后台会自动把这些参数放到每条订阅的“单独转换参数”里，并在下方显示已解码的规则预览，方便检查正则。`target=clash` 和 `url=你的机场订阅链接` 由程序自动生成，不需要手动填写。
 
 启动：
 
