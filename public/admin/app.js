@@ -147,6 +147,32 @@ converterInputSegmented.addEventListener('click', (event) => {
   setSegmentedValue(button.dataset.value);
 });
 
+// Sidebar navigation: show one view at a time so the page stays short.
+const navItems = document.querySelectorAll('.nav-item');
+const viewSections = document.querySelectorAll('.view');
+const viewTitleEl = document.querySelector('#viewTitle');
+const viewSubtitleEl = document.querySelector('#viewSubtitle');
+const viewMeta = {
+  overview: ['概览', '查看更新状态与设备订阅地址'],
+  providers: ['机场', '管理机场名称与筛选 / 重命名规则'],
+  settings: ['订阅设置', '转换地址、模板与各订阅的机场归属'],
+  logs: ['更新日志', '最近的更新记录'],
+};
+
+navItems.forEach((item) => item.addEventListener('click', () => switchView(item.dataset.view)));
+
+function switchView(view) {
+  navItems.forEach((item) => item.classList.toggle('active', item.dataset.view === view));
+  viewSections.forEach((section) => {
+    section.hidden = section.dataset.view !== view;
+  });
+  const meta = viewMeta[view];
+  if (meta) {
+    viewTitleEl.textContent = meta[0];
+    viewSubtitleEl.textContent = meta[1];
+  }
+}
+
 setInterval(loadState, 15000);
 loadInitial();
 
