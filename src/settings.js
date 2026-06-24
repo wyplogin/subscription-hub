@@ -135,7 +135,7 @@ function sanitizeProfile(profile, index) {
     path: normalizePublicPath(profile.path || profile.publicPath || fallback.path || defaultPublicPath(id, target)),
     target,
     templateUrl: stringValue(profile.templateUrl, fallback.templateUrl || ''),
-    extraParams: stringValue(profile.extraParams, fallback.extraParams || '') || fallback.extraParams || '',
+    extraParams: stringValue(profile.extraParams, '') || fallback.extraParams || '',
   };
 }
 

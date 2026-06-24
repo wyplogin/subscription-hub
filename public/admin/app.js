@@ -129,15 +129,26 @@ profilesListEl.addEventListener('click', async (event) => {
   }, 1200);
 });
 
+profilesEditorEl.addEventListener('click', (event) => {
+  const button = event.target.closest('[data-reset-rules]');
+  if (!button) return;
+
+  const row = button.closest('[data-profile-editor]');
+  const id = valueOf(row, 'id');
+  const fallback = defaultSettings.profiles.find((profile) => profile.id === id);
+  const extraParams = row?.querySelector('[data-field="extraParams"]');
+
+  if (!fallback || !extraParams) return;
+  extraParams.value = fallback.extraParams || '';
+  updateRulePreview(row);
+});
+
 profilesEditorEl.addEventListener('input', (event) => {
   const input = event.target.closest('[data-field="extraParams"]');
   if (!input) return;
 
   const row = input.closest('[data-profile-editor]');
-  const preview = row?.querySelector('[data-rule-preview]');
-  if (preview) {
-    preview.innerHTML = renderRulePreview(input.value);
-  }
+  updateRulePreview(row);
 });
 
 setInterval(loadState, 15000);
@@ -288,6 +299,15 @@ function renderProfileEditor(profile) {
           <input data-field="path" type="text" value="${escapeHtml(profile.path || '')}" />
         </label>
       </div>
+      <section class="rules-panel">
+        <div class="rules-title">
+          <span>节点规则预览</span>
+          <button type="button" class="secondary small" data-reset-rules>恢复默认规则</button>
+        </div>
+        <div class="rule-preview" data-rule-preview>
+          ${renderRulePreview(profile.extraParams || '')}
+        </div>
+      </section>
       <details class="advanced-settings"${profile.templateUrl || profile.extraParams ? ' open' : ''}>
         <summary>单独转换参数</summary>
         <div class="settings-grid compact">
@@ -300,12 +320,17 @@ function renderProfileEditor(profile) {
             <textarea data-field="extraParams" rows="3" placeholder="例如 ver=4&diyua=ShadowRocket">${escapeHtml(profile.extraParams || '')}</textarea>
           </label>
         </div>
-        <div class="rule-preview" data-rule-preview>
-          ${renderRulePreview(profile.extraParams || '')}
-        </div>
       </details>
     </article>
   `;
+}
+
+function updateRulePreview(row) {
+  const preview = row?.querySelector('[data-rule-preview]');
+  const extraParams = row?.querySelector('[data-field="extraParams"]');
+  if (preview && extraParams) {
+    preview.innerHTML = renderRulePreview(extraParams.value);
+  }
 }
 
 function renderRulePreview(extraParams) {
