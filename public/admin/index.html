@@ -52,6 +52,37 @@
 
       <section class="panel">
         <div class="section-title">
+          <h2>订阅设置</h2>
+          <button id="saveSettingsButton" type="button">保存设置</button>
+        </div>
+
+        <div class="settings-grid">
+          <label>
+            <span>订阅转换地址</span>
+            <input id="converterUrlInput" type="url" placeholder="https://sub.dler.io/sub" />
+          </label>
+          <label>
+            <span>分流模板地址</span>
+            <input id="templateUrlInput" type="url" placeholder="https://example.com/rules.ini" />
+          </label>
+          <label>
+            <span>转换输入</span>
+            <select id="converterInputSelect">
+              <option value="provider-url">直接使用机场订阅链接</option>
+              <option value="hosted-raw">先下载到 VPS 再转换</option>
+            </select>
+          </label>
+          <label>
+            <span>额外参数</span>
+            <input id="extraParamsInput" type="text" placeholder="emoji=true&udp=true&list=false" />
+          </label>
+        </div>
+
+        <div class="profiles-editor" id="profilesEditor"></div>
+      </section>
+
+      <section class="panel">
+        <div class="section-title">
           <h2>更新日志</h2>
           <button id="refreshButton" type="button" class="secondary">刷新</button>
         </div>

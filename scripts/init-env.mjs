@@ -15,7 +15,7 @@ if (!force && await exists(envPath)) {
 
 let contents = await fs.readFile(examplePath, 'utf8');
 const replacements = {
-  PUBLIC_BASE_URL: process.env.PUBLIC_BASE_URL || 'http://localhost:3000',
+  PUBLIC_BASE_URL: process.env.PUBLIC_BASE_URL || '',
   ADMIN_TOKEN: process.env.ADMIN_TOKEN || randomToken(),
   DOWNLOAD_TOKEN: process.env.DOWNLOAD_TOKEN || '',
   RAW_DOWNLOAD_TOKEN: process.env.RAW_DOWNLOAD_TOKEN || randomToken(),
@@ -29,7 +29,7 @@ for (const [key, value] of Object.entries(replacements)) {
 await fs.writeFile(envPath, contents, { mode: 0o600 });
 
 console.log('Created .env with fresh local tokens.');
-console.log('Next: edit PROVIDER_SUBSCRIPTION_URL, then run npm run dev.');
+console.log('Next: run npm run dev, open /admin/, and fill subscription settings.');
 
 function randomToken() {
   return crypto.randomBytes(32).toString('base64url');

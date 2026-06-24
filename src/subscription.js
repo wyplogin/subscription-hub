@@ -4,6 +4,7 @@ import YAML from 'yaml';
 import { config, requireConfig } from './config.js';
 import { atomicWrite, backupFile, ensureDir, pruneBackups } from './fs-utils.js';
 import { enableProviderSubscription } from './provider/index.js';
+import { getRuntimeSettings, profileDownloadUrl } from './settings.js';
 import { updateState } from './state.js';
 
 let runningUpdate = null;
@@ -29,13 +30,14 @@ async function runUpdate() {
   await updateState({ status: 'running', lastStartedAt: startedAt, lastError: null, logs });
 
   try {
-    requireConfig(config.profiles.length > 0, 'No subscription profiles are configured.');
+    const settings = await getRuntimeSettings();
+    requireConfig(settings.profiles.length > 0, 'No subscription profiles are configured.');
     log('Starting provider subscription refresh.');
     await withTimeout(enableProviderSubscription(log), config.updateTimeoutMs, 'Provider enable step timed out.');
 
-    log(`Refreshing ${config.profiles.length} subscription profile(s).`);
+    log(`Refreshing ${settings.profiles.length} subscription profile(s).`);
     const results = [];
-    for (const profile of config.profiles) {
+    for (const profile of settings.profiles) {
       results.push(await updateProfile(profile, log));
     }
 
@@ -123,7 +125,7 @@ async function updateProfile(profile, log) {
       status: 'idle',
       target: profile.converter.target,
       publicPath: profile.publicPath,
-      downloadUrl: buildProfileDownloadUrl(profile),
+      downloadUrl: profileDownloadUrl(profile),
       lastSucceededAt: now,
       lastFailedAt: null,
       lastError: null,
@@ -139,7 +141,7 @@ async function updateProfile(profile, log) {
       status: 'failed',
       target: profile.converter.target,
       publicPath: profile.publicPath,
-      downloadUrl: buildProfileDownloadUrl(profile),
+      downloadUrl: profileDownloadUrl(profile),
       lastSucceededAt: null,
       lastFailedAt: new Date().toISOString(),
       lastError: error.message,
@@ -264,12 +266,4 @@ async function withTimeout(promise, timeoutMs, message) {
 
 function requiresClashValidation(target) {
   return String(target || '').toLowerCase().includes('clash');
-}
-
-function buildProfileDownloadUrl(profile) {
-  const base = config.publicBaseUrl ? config.publicBaseUrl.replace(/\/$/, '') : '';
-  const url = `${base}${profile.publicPath}`;
-  const token = profile.downloadToken || config.downloadToken;
-  if (!token) return url;
-  return `${url}?token=${encodeURIComponent(token)}`;
 }

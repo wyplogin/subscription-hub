@@ -1,11 +1,9 @@
 import 'dotenv/config';
-import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const dataDir = path.join(rootDir, 'data');
-const profilesFile = resolvePath(process.env.PROFILES_FILE || path.join(dataDir, 'profiles.json'));
 
 function intEnv(name, fallback) {
   const raw = process.env[name];
@@ -17,7 +15,6 @@ function intEnv(name, fallback) {
 export const config = {
   rootDir,
   dataDir,
-  profilesFile,
   host: process.env.HOST || '0.0.0.0',
   port: intEnv('PORT', 3000),
   publicBaseUrl: process.env.PUBLIC_BASE_URL || '',
@@ -53,6 +50,7 @@ export const config = {
   paths: {
     raw: path.join(dataDir, 'configraw.yaml'),
     published: path.join(dataDir, 'config.yaml'),
+    settings: path.join(dataDir, 'settings.json'),
     state: path.join(dataDir, 'state.json'),
     lock: path.join(dataDir, 'update.lock'),
     backups: path.join(dataDir, 'backups'),
@@ -60,117 +58,10 @@ export const config = {
   },
 };
 
-config.profiles = loadProfiles();
-
 export function requireConfig(condition, message) {
   if (!condition) {
     const error = new Error(message);
     error.statusCode = 400;
     throw error;
   }
-}
-
-function loadProfiles() {
-  const profileDefinitions = readProfileDefinitions();
-
-  if (profileDefinitions.length > 0) {
-    return profileDefinitions.map((profile, index) => normalizeProfile(profile, index));
-  }
-
-  if (process.env.PROVIDER_SUBSCRIPTION_URL) {
-    return [
-      normalizeProfile(
-        {
-          id: 'config',
-          name: 'Default',
-          subscriptionUrl: process.env.PROVIDER_SUBSCRIPTION_URL,
-          path: '/config.yaml',
-        },
-        0,
-      ),
-    ];
-  }
-
-  return [];
-}
-
-function readProfileDefinitions() {
-  if (process.env.PROFILES_JSON) {
-    return parseProfiles(process.env.PROFILES_JSON, 'PROFILES_JSON');
-  }
-
-  if (fs.existsSync(profilesFile)) {
-    return parseProfiles(fs.readFileSync(profilesFile, 'utf8'), profilesFile);
-  }
-
-  return [];
-}
-
-function parseProfiles(contents, source) {
-  try {
-    const parsed = JSON.parse(contents);
-    if (!Array.isArray(parsed)) {
-      throw new Error('profile config must be a JSON array');
-    }
-    return parsed;
-  } catch (error) {
-    throw new Error(`Failed to read subscription profiles from ${source}: ${error.message}`);
-  }
-}
-
-function normalizeProfile(profile, index) {
-  const id = normalizeProfileId(profile.id || profile.name || `profile-${index + 1}`);
-  const target = profile.target || config.converter.target;
-  const publicPath = normalizePublicPath(profile.path || profile.outputPath || defaultPublicPath(id, target));
-  const extension = path.extname(publicPath) || defaultExtension(target);
-
-  return {
-    id,
-    name: profile.name || id,
-    subscriptionUrl: profile.subscriptionUrl || profile.url || profile.providerSubscriptionUrl || '',
-    publicPath,
-    downloadToken: profile.downloadToken || '',
-    rawUserAgent: profile.rawUserAgent || config.rawUserAgent,
-    converter: {
-      mode: profile.converterMode || profile.mode || config.converter.mode,
-      input: profile.converterInput || profile.input || config.converter.input,
-      url: profile.subconverterUrl || profile.converterUrl || config.converter.url,
-      target,
-      templateUrl: profile.templateUrl || profile.configTemplateUrl || config.converter.templateUrl,
-      extraParams: profile.extraParams || profile.subconverterExtraParams || config.converter.extraParams,
-    },
-    paths: {
-      raw: path.join(config.paths.profiles, `${id}.raw.yaml`),
-      published: path.join(config.paths.profiles, `${id}${extension}`),
-    },
-  };
-}
-
-function normalizeProfileId(value) {
-  const id = String(value)
-    .trim()
-    .toLowerCase()
-    .replace(/[^a-z0-9_-]+/g, '-')
-    .replace(/^-+|-+$/g, '');
-
-  if (!id) return 'profile';
-  return id;
-}
-
-function normalizePublicPath(value) {
-  const publicPath = String(value || '').trim();
-  if (!publicPath) return '/config.yaml';
-  return publicPath.startsWith('/') ? publicPath : `/${publicPath}`;
-}
-
-function defaultPublicPath(id, target) {
-  return `/${id}${defaultExtension(target)}`;
-}
-
-function defaultExtension(target) {
-  return String(target).toLowerCase().includes('surge') ? '.conf' : '.yaml';
-}
-
-function resolvePath(value) {
-  return path.isAbsolute(value) ? value : path.resolve(rootDir, value);
 }

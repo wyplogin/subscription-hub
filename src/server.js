@@ -5,6 +5,7 @@ import morgan from 'morgan';
 import { config } from './config.js';
 import { hasAdminToken, hasRawDownloadToken, requireAdmin } from './auth.js';
 import { ensureDir, exists } from './fs-utils.js';
+import { getDisplayProfiles, getRuntimeSettings, getSettings, profileDownloadUrl, saveSettings } from './settings.js';
 import { getState } from './state.js';
 import { isUpdateRunning, updateSubscription } from './subscription.js';
 
@@ -24,7 +25,7 @@ app.get('/healthz', (_req, res) => {
 
 app.get('/config.yaml', async (req, res, next) => {
   try {
-    const profile = config.profiles.find((item) => item.publicPath === '/config.yaml');
+    const profile = await profileByPublicPath('/config.yaml');
     if (!profile) {
       return res.status(404).type('text/plain').send('Subscription profile was not found.\n');
     }
@@ -34,24 +35,13 @@ app.get('/config.yaml', async (req, res, next) => {
   }
 });
 
-for (const profile of config.profiles) {
-  if (profile.publicPath === '/config.yaml') continue;
-
-  app.get(profile.publicPath, async (req, res, next) => {
-    try {
-      return sendPublishedProfile(req, res, profile);
-    } catch (error) {
-      return next(error);
-    }
-  });
-}
-
 app.get('/configraw.yaml', async (req, res) => {
   if (!hasAdminToken(req) && !hasRawDownloadToken(req)) {
     return res.status(401).type('text/plain').send('Unauthorized\n');
   }
 
-  const profile = config.profiles[0];
+  const { profiles } = await getRuntimeSettings();
+  const profile = profiles[0];
   if (!profile) {
     return res.status(404).type('text/plain').send('Raw subscription profile was not found.\n');
   }
@@ -68,7 +58,8 @@ app.get('/raw/:profileId.yaml', async (req, res) => {
     return res.status(401).type('text/plain').send('Unauthorized\n');
   }
 
-  const profile = config.profiles.find((item) => item.id === req.params.profileId);
+  const { profiles } = await getRuntimeSettings();
+  const profile = profiles.find((item) => item.id === req.params.profileId);
   if (!profile) {
     return res.status(404).type('text/plain').send('Raw subscription profile was not found.\n');
   }
@@ -83,13 +74,26 @@ app.get('/raw/:profileId.yaml', async (req, res) => {
 
 app.get('/api/state', requireAdmin, async (_req, res) => {
   const state = await getState();
-  res.json({ ...state, running: isUpdateRunning(), profiles: buildProfiles(state) });
+  res.json({ ...state, running: isUpdateRunning(), profiles: await buildProfiles(state, _req) });
+});
+
+app.get('/api/settings', requireAdmin, async (_req, res) => {
+  res.json(await getSettings());
+});
+
+app.put('/api/settings', requireAdmin, async (req, res) => {
+  try {
+    const settings = await saveSettings(req.body);
+    res.json(settings);
+  } catch (error) {
+    res.status(error.statusCode || 500).json({ error: error.message });
+  }
 });
 
 app.post('/api/update', requireAdmin, async (_req, res) => {
   try {
     const result = await updateSubscription();
-    res.json({ ...result, profiles: buildProfiles(result.state) });
+    res.json({ ...result, profiles: await buildProfiles(result.state, _req) });
   } catch (error) {
     res.status(error.statusCode || 500).json({
       ok: false,
@@ -103,6 +107,16 @@ app.use('/admin', express.static(path.join(config.rootDir, 'public', 'admin'), {
 
 app.get('/', (_req, res) => {
   res.redirect('/admin/');
+});
+
+app.get('/:profileFile', async (req, res, next) => {
+  try {
+    const profile = await profileByPublicPath(`/${req.params.profileFile}`);
+    if (!profile) return next();
+    return sendPublishedProfile(req, res, profile);
+  } catch (error) {
+    return next(error);
+  }
 });
 
 app.use(async (err, _req, res, _next) => {
@@ -129,29 +143,29 @@ async function sendPublishedProfile(req, res, profile) {
   return res.sendFile(profile.paths.published);
 }
 
-function buildProfiles(state = {}) {
+async function buildProfiles(state = {}, req = null) {
   const profileResults = state.profileResults || {};
-  return config.profiles.map((profile) => ({
+  const profiles = await getDisplayProfiles();
+  return profiles.map((profile) => ({
     id: profile.id,
     name: profile.name,
     target: profile.converter.target,
     publicPath: profile.publicPath,
-    downloadUrl: buildDownloadUrl(profile),
-    rawUrl: buildRawUrl(profile),
+    downloadUrl: buildDownloadUrl(profile, req),
+    rawUrl: buildRawUrl(profile, req),
+    configured: Boolean(profile.subscriptionUrl),
     ...(profileResults[profile.id] || {}),
   }));
 }
 
-function buildDownloadUrl(profile) {
-  const base = config.publicBaseUrl ? config.publicBaseUrl.replace(/\/$/, '') : '';
-  const url = `${base}${profile.publicPath}`;
-  const token = profile.downloadToken || config.downloadToken;
-  if (!token) return url;
-  return `${url}?token=${encodeURIComponent(token)}`;
+function buildDownloadUrl(profile, req) {
+  const url = profileDownloadUrl(profile);
+  if (url.startsWith('/')) return `${requestBaseUrl(req)}${url}`;
+  return url;
 }
 
-function buildRawUrl(profile) {
-  const base = config.publicBaseUrl ? config.publicBaseUrl.replace(/\/$/, '') : '';
+function buildRawUrl(profile, req) {
+  const base = config.publicBaseUrl ? config.publicBaseUrl.replace(/\/$/, '') : requestBaseUrl(req);
   const url = `${base}/raw/${profile.id}.yaml`;
   if (!config.rawDownloadToken) return '';
   return `${url}?rawToken=${encodeURIComponent(config.rawDownloadToken)}`;
@@ -160,4 +174,16 @@ function buildRawUrl(profile) {
 function contentTypeFor(publicPath) {
   if (publicPath.endsWith('.conf')) return 'text/plain; charset=utf-8';
   return 'text/yaml; charset=utf-8';
+}
+
+async function profileByPublicPath(publicPath) {
+  const { profiles } = await getRuntimeSettings();
+  return profiles.find((item) => item.publicPath === publicPath);
+}
+
+function requestBaseUrl(req) {
+  if (!req) return '';
+  const proto = req.get('x-forwarded-proto') || req.protocol;
+  const host = req.get('host');
+  return host ? `${proto}://${host}` : '';
 }
