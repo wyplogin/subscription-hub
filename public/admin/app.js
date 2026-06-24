@@ -18,6 +18,20 @@ const extraParamsInput = document.querySelector('#extraParamsInput');
 const profilesEditorEl = document.querySelector('#profilesEditor');
 const logsEl = document.querySelector('#logs');
 
+const defaultSettings = {
+  converter: {
+    url: 'https://sub.dler.io/sub',
+    input: 'provider-url',
+    templateUrl: '',
+    extraParams: 'emoji=true&udp=true&list=false',
+  },
+  profiles: [
+    { id: 'clash-ss', name: 'Clash SS', subscriptionUrl: '', path: '/clash-ss.yaml', target: 'clash' },
+    { id: 'clash-anytls', name: 'Clash AnyTLS', subscriptionUrl: '', path: '/clash-anytls.yaml', target: 'clash' },
+    { id: 'surge-anytls', name: 'Surge AnyTLS', subscriptionUrl: '', path: '/surge-anytls.conf', target: 'surge' },
+  ],
+};
+
 let adminToken = localStorage.getItem('adminToken') || '';
 tokenInput.value = adminToken;
 
@@ -91,6 +105,7 @@ setInterval(loadState, 15000);
 loadInitial();
 
 async function loadInitial() {
+  renderSettings(defaultSettings);
   await loadSettings();
   await loadState();
 }
@@ -168,12 +183,22 @@ function showError(error) {
 }
 
 function renderSettings(settings) {
-  converterUrlInput.value = settings.converter?.url || '';
-  templateUrlInput.value = settings.converter?.templateUrl || '';
-  converterInputSelect.value = settings.converter?.input || 'provider-url';
-  extraParamsInput.value = settings.converter?.extraParams || '';
+  const merged = {
+    ...defaultSettings,
+    ...settings,
+    converter: {
+      ...defaultSettings.converter,
+      ...(settings.converter || {}),
+    },
+    profiles: settings.profiles?.length ? settings.profiles : defaultSettings.profiles,
+  };
 
-  profilesEditorEl.innerHTML = (settings.profiles || []).map(renderProfileEditor).join('');
+  converterUrlInput.value = merged.converter.url || '';
+  templateUrlInput.value = merged.converter.templateUrl || '';
+  converterInputSelect.value = merged.converter.input || 'provider-url';
+  extraParamsInput.value = merged.converter.extraParams || '';
+
+  profilesEditorEl.innerHTML = merged.profiles.map(renderProfileEditor).join('');
 }
 
 function renderProfileEditor(profile) {
