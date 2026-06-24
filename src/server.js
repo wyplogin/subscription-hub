@@ -103,10 +103,17 @@ app.post('/api/update', requireAdmin, async (_req, res) => {
   }
 });
 
-app.use('/admin', express.static(path.join(config.rootDir, 'public', 'admin'), { extensions: ['html'] }));
+const adminStatic = express.static(path.join(config.rootDir, 'public', 'admin'), { extensions: ['html'] });
+app.use('/subadmin', adminStatic);
+app.get('/admin', (_req, res) => {
+  res.redirect('/subadmin/');
+});
+app.get('/admin/', (_req, res) => {
+  res.redirect('/subadmin/');
+});
 
 app.get('/', (_req, res) => {
-  res.redirect('/admin/');
+  res.redirect('/subadmin/');
 });
 
 app.get('/:profileFile', async (req, res, next) => {

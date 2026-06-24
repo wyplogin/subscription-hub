@@ -2,7 +2,7 @@
 
 这个项目把现在手动做的几步合成一个小服务：
 
-1. 打开 `/admin/`，填写机场订阅链接、订阅转换地址、分流模板地址。
+1. 打开 `/subadmin/`，填写机场订阅链接、订阅转换地址、分流模板地址。
 2. 保存设置后，下次打开仍然保留。
 3. 点“立即更新”，服务会拉取多个客户端/协议的原始订阅。
 4. 通过 subconverter 分别转换成 Clash、Surge 等客户端配置。
@@ -23,7 +23,7 @@
 后台页面：
 
 ```text
-https://sub.example.com/admin/
+https://sub.example.com/subadmin/
 ```
 
 ## 本地先跑起来
@@ -53,7 +53,7 @@ npm run dev
 打开：
 
 ```text
-http://localhost:3000/admin/
+http://localhost:3000/subadmin/
 ```
 
 设备订阅地址会显示在后台页面里。
@@ -138,7 +138,7 @@ bash deploy/bootstrap-vps.sh
 ADMIN_TOKEN=换成很长的管理口令
 ```
 
-订阅链接、订阅转换地址、分流模板地址都在 `/admin/` 里填写和保存。
+订阅链接、订阅转换地址、分流模板地址都在 `/subadmin/` 里填写和保存。
 
 转换输入模式也在后台面板里选择。通常先用“直接使用机场订阅链接”；如果第三方转换器不能访问机场链接，再改为“先下载到 VPS 再转换”。
 
@@ -177,14 +177,14 @@ sudo systemctl enable --now subscription-hub-update.timer
 
 ## 日常使用
 
-1. 打开 `/admin/`。
+1. 打开 `/subadmin/`。
 2. 输入 `.env` 里的 `ADMIN_TOKEN`。
 3. 在“订阅设置”里填写订阅链接、转换地址、分流模板地址。
 4. 点击“保存设置”。
 5. 点击“立即更新”。
 6. 设备里使用页面显示的订阅地址。
 
-默认不设置设备下载口令，订阅地址就是干净的固定链接。`/admin/` 仍然需要 `ADMIN_TOKEN`。
+默认不设置设备下载口令，订阅地址就是干净的固定链接。`/subadmin/` 仍然需要 `ADMIN_TOKEN`。
 
 ## 配置说明
 
