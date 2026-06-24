@@ -373,6 +373,11 @@ h1 {
   font-weight: 600;
 }
 
+.head-actions {
+  display: flex;
+  gap: 10px;
+}
+
 .hint {
   color: var(--muted);
   font-size: 13px;

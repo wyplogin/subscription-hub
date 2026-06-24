@@ -4,6 +4,7 @@ const updateButton = document.querySelector('#updateButton');
 const refreshButton = document.querySelector('#refreshButton');
 const copyAllButton = document.querySelector('#copyAllButton');
 const saveSettingsButton = document.querySelector('#saveSettingsButton');
+const saveProvidersButton = document.querySelector('#saveProvidersButton');
 const addProviderButton = document.querySelector('#addProviderButton');
 const loginPanel = document.querySelector('#loginPanel');
 const statusEl = document.querySelector('#status');
@@ -71,31 +72,39 @@ addProviderButton.addEventListener('click', () => {
   renderProfilesEditor();
 });
 
-saveSettingsButton.addEventListener('click', async () => {
-  setSaving(true);
+saveSettingsButton.addEventListener('click', () => saveAllSettings(saveSettingsButton, '保存设置'));
+saveProvidersButton.addEventListener('click', () => saveAllSettings(saveProvidersButton, '保存'));
+
+// Both the airport panel and the settings panel save the whole settings object,
+// so a name edited in either place is persisted.
+async function saveAllSettings(button, label) {
+  const buttons = [saveSettingsButton, saveProvidersButton];
+  buttons.forEach((item) => (item.disabled = true));
+  button.textContent = '保存中...';
   try {
     syncModelFromDom();
     const saved = await api('/api/settings', { method: 'PUT', body: JSON.stringify(model) });
     renderSettings(saved);
     await loadState();
-    saveSettingsButton.textContent = '已保存';
+    button.textContent = '已保存';
     setTimeout(() => {
-      saveSettingsButton.textContent = '保存设置';
+      button.textContent = label;
     }, 1200);
   } catch (error) {
     showError(error);
+    button.textContent = label;
   } finally {
-    setSaving(false);
+    buttons.forEach((item) => (item.disabled = false));
   }
-});
+}
 
 copyAllButton.addEventListener('click', async () => {
   const urls = [...profilesListEl.querySelectorAll('[data-profile-url]')]
     .map((item) => item.textContent.trim())
     .filter((value) => value && value !== '-');
   if (!urls.length) return;
-  await navigator.clipboard.writeText(urls.join('\n'));
-  flashButton(copyAllButton, '已复制', '复制全部');
+  const ok = await copyText(urls.join('\n'));
+  flashButton(copyAllButton, ok ? '已复制' : '复制失败', '复制全部');
 });
 
 // Device list: copy + per-profile update.
@@ -105,8 +114,8 @@ profilesListEl.addEventListener('click', async (event) => {
     const row = copyButton.closest('[data-profile-row]');
     const url = row?.querySelector('[data-profile-url]')?.textContent.trim();
     if (!url || url === '-') return;
-    await navigator.clipboard.writeText(url);
-    flashButton(copyButton, '已复制', '复制');
+    const ok = await copyText(url);
+    flashButton(copyButton, ok ? '已复制' : '复制失败', '复制');
     return;
   }
 
@@ -564,16 +573,40 @@ function setBusy(isBusy) {
   });
 }
 
-function setSaving(isSaving) {
-  saveSettingsButton.disabled = isSaving;
-  if (isSaving) saveSettingsButton.textContent = '保存中...';
-}
-
 function flashButton(button, activeText, restoreText) {
   button.textContent = activeText;
   setTimeout(() => {
     button.textContent = restoreText;
   }, 1200);
+}
+
+// Clipboard works over HTTPS/localhost via the async API; fall back to a hidden
+// textarea + execCommand so copy still works when the panel is served over HTTP.
+async function copyText(text) {
+  try {
+    if (navigator.clipboard && window.isSecureContext) {
+      await navigator.clipboard.writeText(text);
+      return true;
+    }
+  } catch {
+    // fall through to the execCommand path
+  }
+
+  try {
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'fixed';
+    textarea.style.top = '-1000px';
+    textarea.style.opacity = '0';
+    document.body.appendChild(textarea);
+    textarea.select();
+    const ok = document.execCommand('copy');
+    document.body.removeChild(textarea);
+    return ok;
+  } catch {
+    return false;
+  }
 }
 
 function showError(error) {
