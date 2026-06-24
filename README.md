@@ -5,8 +5,8 @@
 1. 打开 `/subadmin/`，填写机场订阅链接、订阅转换地址、分流模板地址。
 2. 保存设置后，下次打开仍然保留。
 3. 点“立即更新”，服务会拉取多个客户端/协议的原始订阅。
-4. 通过 subconverter 分别转换成 Clash、Surge 等客户端配置。
-5. 发布为固定地址，例如 `/clash-ss.yaml`、`/clash-anytls.yaml`、`/surge-anytls.conf`。
+4. 通过 subconverter 转换成 Clash 配置。
+5. 发布为固定地址，例如 `/clash-ss.yaml`、`/clash-anytls.yaml`、`/clash-ss-2.yaml`。
 
 ## 推荐结构
 
@@ -14,7 +14,7 @@
 你的设备
   -> https://sub.example.com/clash-ss.yaml
   -> https://sub.example.com/clash-anytls.yaml
-  -> https://sub.example.com/surge-anytls.conf
+  -> https://sub.example.com/clash-ss-2.yaml
       -> VPS 上的 subscription-hub
           -> 机场订阅链接
           -> subconverter
@@ -39,33 +39,26 @@ npm run init
 
 后台里可以直接编辑：
 
-- 三条机场订阅链接：`Clash SS`、`Clash AnyTLS`、`Surge AnyTLS`
+- 三条 Clash 机场订阅链接：`Clash SS`、`Clash AnyTLS`、`Clash SS 2`
 - 订阅转换地址，例如 `https://sub.dler.io/sub`
 - 分流模板地址
 - 转换输入模式：直接用机场链接，或先下载到 VPS 再转换
 
-### Surge 转换参数示例
+### 默认节点规则
 
-如果官方示例是这种完整地址：
-
-```text
-https://api.v1.mk/sub?target=surge&ver=4&url=http%3A%2F%2Fwww.example.com%2Fexam.yaml&insert=false&config=https%3A%2F%2Fraw.githubusercontent.com%2FACL4SSR%2FACL4SSR%2Fmaster%2FClash%2Fconfig%2FACL4SSR_Online_Full_NoAuto.ini&emoji=true&list=false&xudp=false&udp=false&tfo=false&expand=true&scv=false&fdn=false&diyua=ShadowRocket
-```
-
-后台里不要把整条都填进“订阅转换地址”。推荐拆成这样：
+`Clash SS` 和 `Clash AnyTLS` 默认使用同一个机场的筛选和重命名参数：
 
 ```text
-订阅转换地址：
-https://api.v1.mk/sub
-
-分流模板地址：
-https://raw.githubusercontent.com/ACL4SSR/ACL4SSR/master/Clash/config/ACL4SSR_Online_Full_NoAuto.ini
-
-Surge AnyTLS -> 单独转换参数：
-ver=4&insert=false&emoji=true&list=false&xudp=false&udp=false&tfo=false&expand=true&scv=false&fdn=false&diyua=ShadowRocket
+include=Premium&rename=%60Premium%40Pre%60
 ```
 
-`target=surge` 和 `url=你的机场订阅链接` 由程序自动生成，不需要手动填写。
+`Clash SS 2` 默认使用第二个机场的筛选和重命名参数：
+
+```text
+exclude=%E6%98%9F%E9%93%BE%7C%E6%B8%B8%E6%88%8F%7C5G%7C%E5%AE%9E%E9%AA%8C&include=%E9%A6%99%E6%B8%AF%7C%E6%96%B0%E5%8A%A0%E5%9D%A1%7C%E6%97%A5%E6%9C%AC%7C%E7%BE%8E%E5%9B%BD&rename=...
+```
+
+后台会自动把这些参数放到每条订阅的“单独转换参数”里。`target=clash` 和 `url=你的机场订阅链接` 由程序自动生成，不需要手动填写。
 
 启动：
 
@@ -241,6 +234,8 @@ data/settings.json
 data/state.json
 data/profiles/clash-ss.raw.yaml
 data/profiles/clash-ss.yaml
+data/profiles/clash-anytls.yaml
+data/profiles/clash-ss-secondary.yaml
 data/backups/
 ```
 
@@ -252,7 +247,7 @@ data/backups/
 TARGET=clash
 ```
 
-如果你的模板会输出 Surge，请在后台把对应档案的目标格式选成 `Surge`。
+现在项目只发布 Clash 配置。如果转换器返回的不是 Clash YAML，通常是订阅转换地址、分流模板地址或单独转换参数填写不匹配。
 
 第三方 subconverter 无法读取原始订阅：
 

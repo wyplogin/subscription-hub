@@ -18,6 +18,10 @@ const extraParamsInput = document.querySelector('#extraParamsInput');
 const profilesEditorEl = document.querySelector('#profilesEditor');
 const logsEl = document.querySelector('#logs');
 
+const primaryProviderParams = 'include=Premium&rename=%60Premium%40Pre%60';
+const secondaryProviderParams =
+  'exclude=%E6%98%9F%E9%93%BE%7C%E6%B8%B8%E6%88%8F%7C5G%7C%E5%AE%9E%E9%AA%8C&include=%E9%A6%99%E6%B8%AF%7C%E6%96%B0%E5%8A%A0%E5%9D%A1%7C%E6%97%A5%E6%9C%AC%7C%E7%BE%8E%E5%9B%BD&rename=%60%E9%A6%99%E6%B8%AF%E5%AE%B6%E5%AE%BD%5Cs*(%5Cd%2B).*%40Hong%20Kong%20%241%20%5BPre%5D%60%60%E9%A6%99%E6%B8%AF%5Cs*(%5Cd%2B).*%40Hong%20Kong%20%241%60%60%E6%96%B0%E5%8A%A0%E5%9D%A1%E5%AE%B6%E5%AE%BD.*%40Singapore%20%5BPre%5D%60%60%E6%96%B0%E5%8A%A0%E5%9D%A1%5Cs*(%5Cd%2B).*%40Singapore%20%241%60%60%E6%97%A5%E6%9C%AC%E5%AE%B6%E5%AE%BD%5Cs*(%5Cd%2B).*%40Japan%20%241%20%5BPre%5D%60%60%E6%97%A5%E6%9C%AC%5Cs*(%5Cd%2B).*%40Japan%20%241%60%60%E7%BE%8E%E5%9B%BD-%E5%AE%B6%E5%AE%BD%5Cs*(%5Cd%2B).*%40United%20States%20%241%20%5BPre%5D%60%60%E7%BE%8E%E5%9B%BD-%E8%B4%B9%E5%9F%8E.*%40United%20States%20Philadelphia%60%60%E7%BE%8E%E5%9B%BD-%E7%BA%BD%E7%BA%A6%5Cs*(%5Cd%2B).*%40United%20States%20New%20York%20%241%60%60%E7%BE%8E%E5%9B%BD-%E6%B4%9B%E6%9D%89%E7%9F%B6%5Cs*(%5Cd%2B).*%40United%20States%20Los%20Angeles%20%241%60%60%E7%BE%8E%E5%9B%BD-%E7%9B%90%E6%B9%96%E5%9F%8E.*%40United%20States%20Salt%20Lake%20City%60%60%E7%BE%8E%E5%9B%BD-%E5%9C%A3%E4%BD%95%E5%A1%9E.*%40United%20States%20San%20Jose%60%60%E7%BE%8E%E5%9B%BD-%E8%BF%88%E9%98%BF%E5%AF%86.*%40United%20States%20Miami%60%60%E7%BE%8E%E5%9B%BD-%E8%A5%BF%E9%9B%85%E5%9B%BE.*%40United%20States%20Seattle%60%60%E7%BE%8E%E5%9B%BD-%E6%AA%80%E9%A6%99%E5%B1%B1.*%40United%20States%20Honolulu%60%60%E7%BE%8E%E5%9B%BD-%E6%97%A7%E9%87%91%E5%B1%B1.*%40United%20States%20San%20Francisco%60%60%E7%BE%8E%E5%9B%BD-%E5%87%A4%E5%87%B0%E5%9F%8E.*%40United%20States%20Phoenix%60%60%E7%BE%8E%E5%9B%BD-%E8%BE%BE%E6%8B%89%E6%96%AF.*%40United%20States%20Dallas%60%60%E7%BE%8E%E5%9B%BD-%E4%BC%91%E6%96%AF%E9%A1%BF.*%40United%20States%20Houston%60%60%E7%BE%8E%E5%9B%BD-%E8%8A%9D%E5%8A%A0%E5%93%A5.*%40United%20States%20Chicago%60%60%E7%BE%8E%E5%9B%BD-%E5%A4%8F%E6%B4%9B%E7%89%B9.*%40United%20States%20Charlotte%60%60%E7%BE%8E%E5%9B%BD-%E6%96%AF%E6%B3%A2%E5%9D%8E.*%40United%20States%20Spokane%60%60%E7%BE%8E%E5%9B%BD-%E9%98%BF%E4%BB%80%E6%9C%AC.*%40United%20States%20Ashburn%60%60%E7%BE%8E%E5%9B%BD-%E6%8B%89%E6%96%AF%E7%BB%B4%E5%8A%A0%E6%96%AF.*%40United%20States%20Las%20Vegas%60%60%E7%BE%8E%E5%9B%BD-%E5%AE%9E%E9%AA%8C%E8%8A%82%E7%82%B9.*%40United%20States%20Experimental%60';
+
 const defaultSettings = {
   converter: {
     url: 'https://sub.dler.io/sub',
@@ -33,7 +37,7 @@ const defaultSettings = {
       path: '/clash-ss.yaml',
       target: 'clash',
       templateUrl: '',
-      extraParams: '',
+      extraParams: primaryProviderParams,
     },
     {
       id: 'clash-anytls',
@@ -42,17 +46,16 @@ const defaultSettings = {
       path: '/clash-anytls.yaml',
       target: 'clash',
       templateUrl: '',
-      extraParams: '',
+      extraParams: primaryProviderParams,
     },
     {
-      id: 'surge-anytls',
-      name: 'Surge AnyTLS',
+      id: 'clash-ss-secondary',
+      name: 'Clash SS 2',
       subscriptionUrl: '',
-      path: '/surge-anytls.conf',
-      target: 'surge',
+      path: '/clash-ss-2.yaml',
+      target: 'clash',
       templateUrl: '',
-      extraParams:
-        'ver=4&insert=false&emoji=true&list=false&xudp=false&udp=false&tfo=false&expand=true&scv=false&fdn=false&diyua=ShadowRocket',
+      extraParams: secondaryProviderParams,
     },
   ],
 };
@@ -208,6 +211,7 @@ function showError(error) {
 }
 
 function renderSettings(settings) {
+  const profiles = normalizeProfiles(settings.profiles);
   const merged = {
     ...defaultSettings,
     ...settings,
@@ -215,7 +219,7 @@ function renderSettings(settings) {
       ...defaultSettings.converter,
       ...(settings.converter || {}),
     },
-    profiles: settings.profiles?.length ? settings.profiles : defaultSettings.profiles,
+    profiles,
   };
 
   converterUrlInput.value = merged.converter.url || '';
@@ -226,14 +230,39 @@ function renderSettings(settings) {
   profilesEditorEl.innerHTML = merged.profiles.map(renderProfileEditor).join('');
 }
 
+function normalizeProfiles(profiles = []) {
+  const savedById = new Map(
+    profiles
+      .filter((profile) => profile && typeof profile === 'object')
+      .map((profile) => [profile.id, profile]),
+  );
+  const mergedDefaults = defaultSettings.profiles.map((profile) => ({
+    ...profile,
+    ...(savedById.get(profile.id) || {}),
+    target: 'clash',
+    extraParams: savedById.get(profile.id)?.extraParams || profile.extraParams,
+  }));
+  const customProfiles = profiles
+    .filter((profile) => profile && typeof profile === 'object')
+    .filter((profile) => !defaultSettings.profiles.some((fallback) => fallback.id === profile.id))
+    .filter((profile) => (profile.target || 'clash') === 'clash')
+    .map((profile) => ({ ...profile, target: 'clash' }));
+
+  return [...mergedDefaults, ...customProfiles];
+}
+
 function renderProfileEditor(profile) {
   return `
     <article class="profile-editor" data-profile-editor>
       <div class="editor-header">
-        <strong>${escapeHtml(profile.name || profile.id)}</strong>
-        <span>${escapeHtml(profile.path || '')}</span>
+        <div>
+          <strong>${escapeHtml(profile.name || profile.id)}</strong>
+          <span>Clash 配置</span>
+        </div>
+        <code>${escapeHtml(profile.path || '')}</code>
       </div>
       <input type="hidden" data-field="id" value="${escapeHtml(profile.id || '')}" />
+      <input type="hidden" data-field="target" value="clash" />
       <label>
         <span>显示名称</span>
         <input data-field="name" type="text" value="${escapeHtml(profile.name || '')}" />
@@ -246,13 +275,6 @@ function renderProfileEditor(profile) {
         <label>
           <span>公开路径</span>
           <input data-field="path" type="text" value="${escapeHtml(profile.path || '')}" />
-        </label>
-        <label>
-          <span>目标格式</span>
-          <select data-field="target">
-            <option value="clash"${profile.target === 'clash' ? ' selected' : ''}>Clash</option>
-            <option value="surge"${profile.target === 'surge' ? ' selected' : ''}>Surge</option>
-          </select>
         </label>
       </div>
       <details class="advanced-settings"${profile.templateUrl || profile.extraParams ? ' open' : ''}>
@@ -285,7 +307,7 @@ function collectSettings() {
       name: valueOf(row, 'name'),
       subscriptionUrl: valueOf(row, 'subscriptionUrl'),
       path: valueOf(row, 'path'),
-      target: valueOf(row, 'target'),
+      target: 'clash',
       templateUrl: valueOf(row, 'templateUrl'),
       extraParams: valueOf(row, 'extraParams'),
     })),
