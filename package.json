@@ -1,0 +1,22 @@
+{
+  "name": "proxy-subscription-hub",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "init": "node scripts/init-env.mjs",
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "update": "node scripts/update.mjs",
+    "test": "node --test"
+  },
+  "dependencies": {
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "helmet": "^8.0.0",
+    "morgan": "^1.10.0",
+    "playwright": "^1.49.1",
+    "yaml": "^2.6.1"
+  },
+  "devDependencies": {}
+}

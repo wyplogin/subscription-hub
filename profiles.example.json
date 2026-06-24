@@ -1,0 +1,23 @@
+[
+  {
+    "id": "clash-ss",
+    "name": "Clash SS",
+    "subscriptionUrl": "https://provider.example.com/clash-ss",
+    "path": "/clash-ss.yaml",
+    "target": "clash"
+  },
+  {
+    "id": "clash-anytls",
+    "name": "Clash AnyTLS",
+    "subscriptionUrl": "https://provider.example.com/clash-anytls",
+    "path": "/clash-anytls.yaml",
+    "target": "clash"
+  },
+  {
+    "id": "surge-anytls",
+    "name": "Surge AnyTLS",
+    "subscriptionUrl": "https://provider.example.com/surge-anytls",
+    "path": "/surge-anytls.conf",
+    "target": "surge"
+  }
+]

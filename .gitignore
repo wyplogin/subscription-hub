@@ -1,0 +1,13 @@
+node_modules/
+.env
+data/*.yaml
+data/*.yml
+data/*.json
+!data/.gitkeep
+data/backups/*
+!data/backups/.gitkeep
+data/profiles/*
+!data/profiles/.gitkeep
+playwright-report/
+test-results/
+.DS_Store

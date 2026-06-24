@@ -1,0 +1,10 @@
+[Unit]
+Description=Refresh proxy subscription
+Requires=docker.service
+After=docker.service
+
+[Service]
+Type=oneshot
+WorkingDirectory=/opt/subscription-hub
+EnvironmentFile=/opt/subscription-hub/.env
+ExecStart=/usr/bin/curl -fsS -X POST -H "Authorization: Bearer ${ADMIN_TOKEN}" http://127.0.0.1:3000/api/update

@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>订阅更新</title>
+    <link rel="stylesheet" href="/admin/styles.css" />
+  </head>
+  <body>
+    <main class="shell">
+      <section class="topbar">
+        <div>
+          <h1>订阅更新</h1>
+          <p>开启机场订阅、拉取原始配置、转换并发布给设备。</p>
+        </div>
+        <button id="updateButton" type="button">立即更新</button>
+      </section>
+
+      <section class="panel login-panel" id="loginPanel">
+        <label for="tokenInput">管理口令</label>
+        <div class="token-row">
+          <input id="tokenInput" type="password" autocomplete="current-password" />
+          <button id="saveTokenButton" type="button">保存</button>
+        </div>
+      </section>
+
+      <section class="grid">
+        <article class="panel">
+          <span class="label">状态</span>
+          <strong id="status">读取中</strong>
+          <p id="lastMessage">正在连接服务...</p>
+        </article>
+        <article class="panel">
+          <span class="label">最近成功</span>
+          <strong id="lastSucceededAt">-</strong>
+          <p id="publishedBytes">-</p>
+        </article>
+        <article class="panel">
+          <span class="label">订阅档案</span>
+          <strong id="profileCount">-</strong>
+          <p>每个客户端使用自己的固定地址。</p>
+        </article>
+      </section>
+
+      <section class="panel">
+        <div class="section-title">
+          <h2>设备订阅地址</h2>
+          <button id="copyAllButton" type="button" class="secondary">复制全部</button>
+        </div>
+        <div id="profilesList" class="profiles-list"></div>
+      </section>
+
+      <section class="panel">
+        <div class="section-title">
+          <h2>更新日志</h2>
+          <button id="refreshButton" type="button" class="secondary">刷新</button>
+        </div>
+        <ol id="logs" class="logs"></ol>
+      </section>
+    </main>
+
+    <script src="/admin/app.js" type="module"></script>
+  </body>
+</html>

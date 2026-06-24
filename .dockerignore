@@ -1,0 +1,13 @@
+.env
+.git
+.DS_Store
+node_modules
+npm-debug.log
+playwright-report
+test-results
+data/*.yaml
+data/*.yml
+data/*.json
+!data/.gitkeep
+data/backups/*
+data/profiles/*
