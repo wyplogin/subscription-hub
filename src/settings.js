@@ -6,6 +6,11 @@ const primaryProviderParams = 'include=Premium&rename=%60Premium%40Pre%60';
 const secondaryProviderParams =
   'exclude=%E6%98%9F%E9%93%BE%7C%E6%B8%B8%E6%88%8F%7C5G%7C%E5%AE%9E%E9%AA%8C&include=%E9%A6%99%E6%B8%AF%7C%E6%96%B0%E5%8A%A0%E5%9D%A1%7C%E6%97%A5%E6%9C%AC%7C%E7%BE%8E%E5%9B%BD&rename=%60%E9%A6%99%E6%B8%AF%E5%AE%B6%E5%AE%BD%5Cs*(%5Cd%2B).*%40Hong%20Kong%20%241%20%5BPre%5D%60%60%E9%A6%99%E6%B8%AF%5Cs*(%5Cd%2B).*%40Hong%20Kong%20%241%60%60%E6%96%B0%E5%8A%A0%E5%9D%A1%E5%AE%B6%E5%AE%BD.*%40Singapore%20%5BPre%5D%60%60%E6%96%B0%E5%8A%A0%E5%9D%A1%5Cs*(%5Cd%2B).*%40Singapore%20%241%60%60%E6%97%A5%E6%9C%AC%E5%AE%B6%E5%AE%BD%5Cs*(%5Cd%2B).*%40Japan%20%241%20%5BPre%5D%60%60%E6%97%A5%E6%9C%AC%5Cs*(%5Cd%2B).*%40Japan%20%241%60%60%E7%BE%8E%E5%9B%BD-%E5%AE%B6%E5%AE%BD%5Cs*(%5Cd%2B).*%40United%20States%20%241%20%5BPre%5D%60%60%E7%BE%8E%E5%9B%BD-%E8%B4%B9%E5%9F%8E.*%40United%20States%20Philadelphia%60%60%E7%BE%8E%E5%9B%BD-%E7%BA%BD%E7%BA%A6%5Cs*(%5Cd%2B).*%40United%20States%20New%20York%20%241%60%60%E7%BE%8E%E5%9B%BD-%E6%B4%9B%E6%9D%89%E7%9F%B6%5Cs*(%5Cd%2B).*%40United%20States%20Los%20Angeles%20%241%60%60%E7%BE%8E%E5%9B%BD-%E7%9B%90%E6%B9%96%E5%9F%8E.*%40United%20States%20Salt%20Lake%20City%60%60%E7%BE%8E%E5%9B%BD-%E5%9C%A3%E4%BD%95%E5%A1%9E.*%40United%20States%20San%20Jose%60%60%E7%BE%8E%E5%9B%BD-%E8%BF%88%E9%98%BF%E5%AF%86.*%40United%20States%20Miami%60%60%E7%BE%8E%E5%9B%BD-%E8%A5%BF%E9%9B%85%E5%9B%BE.*%40United%20States%20Seattle%60%60%E7%BE%8E%E5%9B%BD-%E6%AA%80%E9%A6%99%E5%B1%B1.*%40United%20States%20Honolulu%60%60%E7%BE%8E%E5%9B%BD-%E6%97%A7%E9%87%91%E5%B1%B1.*%40United%20States%20San%20Francisco%60%60%E7%BE%8E%E5%9B%BD-%E5%87%A4%E5%87%B0%E5%9F%8E.*%40United%20States%20Phoenix%60%60%E7%BE%8E%E5%9B%BD-%E8%BE%BE%E6%8B%89%E6%96%AF.*%40United%20States%20Dallas%60%60%E7%BE%8E%E5%9B%BD-%E4%BC%91%E6%96%AF%E9%A1%BF.*%40United%20States%20Houston%60%60%E7%BE%8E%E5%9B%BD-%E8%8A%9D%E5%8A%A0%E5%93%A5.*%40United%20States%20Chicago%60%60%E7%BE%8E%E5%9B%BD-%E5%A4%8F%E6%B4%9B%E7%89%B9.*%40United%20States%20Charlotte%60%60%E7%BE%8E%E5%9B%BD-%E6%96%AF%E6%B3%A2%E5%9D%8E.*%40United%20States%20Spokane%60%60%E7%BE%8E%E5%9B%BD-%E9%98%BF%E4%BB%80%E6%9C%AC.*%40United%20States%20Ashburn%60%60%E7%BE%8E%E5%9B%BD-%E6%8B%89%E6%96%AF%E7%BB%B4%E5%8A%A0%E6%96%AF.*%40United%20States%20Las%20Vegas%60%60%E7%BE%8E%E5%9B%BD-%E5%AE%9E%E9%AA%8C%E8%8A%82%E7%82%B9.*%40United%20States%20Experimental%60';
 
+const defaultProviders = [
+  { id: 'primary', name: '机场一', extraParams: primaryProviderParams },
+  { id: 'secondary', name: '机场二', extraParams: secondaryProviderParams },
+];
+
 const defaultProfiles = [
   {
     id: 'clash-ss',
@@ -13,8 +18,7 @@ const defaultProfiles = [
     subscriptionUrl: '',
     path: '/clash-ss.yaml',
     target: 'clash',
-    templateUrl: '',
-    extraParams: primaryProviderParams,
+    providerId: 'primary',
   },
   {
     id: 'clash-anytls',
@@ -22,8 +26,7 @@ const defaultProfiles = [
     subscriptionUrl: '',
     path: '/clash-anytls.yaml',
     target: 'clash',
-    templateUrl: '',
-    extraParams: primaryProviderParams,
+    providerId: 'primary',
   },
   {
     id: 'clash-ss-secondary',
@@ -31,10 +34,17 @@ const defaultProfiles = [
     subscriptionUrl: '',
     path: '/clash-ss-2.yaml',
     target: 'clash',
-    templateUrl: '',
-    extraParams: secondaryProviderParams,
+    providerId: 'secondary',
   },
 ];
+
+// Maps legacy/default profile ids to their airport, used when migrating old
+// settings that stored rename/filter rules per profile instead of per airport.
+const defaultProfileProviderMap = {
+  'clash-ss': 'primary',
+  'clash-anytls': 'primary',
+  'clash-ss-secondary': 'secondary',
+};
 
 export function defaultSettings() {
   return {
@@ -44,7 +54,8 @@ export function defaultSettings() {
       templateUrl: config.converter.templateUrl || '',
       extraParams: config.converter.extraParams || 'emoji=true&udp=true&list=false',
     },
-    profiles: defaultProfiles,
+    providers: defaultProviders.map((provider) => ({ ...provider })),
+    profiles: defaultProfiles.map((profile) => ({ ...profile })),
   };
 }
 
@@ -60,13 +71,15 @@ export async function getRuntimeSettings() {
     ...settings,
     profiles: settings.profiles
       .filter((profile) => profile.subscriptionUrl)
-      .map((profile, index) => normalizeRuntimeProfile(profile, settings.converter, index)),
+      .map((profile, index) => normalizeRuntimeProfile(profile, settings.converter, settings.providers, index)),
   };
 }
 
 export async function getDisplayProfiles() {
   const settings = await getSettings();
-  return settings.profiles.map((profile, index) => normalizeRuntimeProfile(profile, settings.converter, index));
+  return settings.profiles.map((profile, index) =>
+    normalizeRuntimeProfile(profile, settings.converter, settings.providers, index),
+  );
 }
 
 export function profileDownloadUrl(profile) {
@@ -87,7 +100,18 @@ export async function saveSettings(input) {
 function sanitizeSettings(input = {}) {
   const fallback = defaultSettings();
   const converter = input.converter && typeof input.converter === 'object' ? input.converter : {};
-  const profiles = mergeProfilesWithDefaults(Array.isArray(input.profiles) ? input.profiles : fallback.profiles);
+  const providers = sanitizeProviders(input);
+  const profiles = mergeProfilesWithDefaults(Array.isArray(input.profiles) ? input.profiles : fallback.profiles)
+    .map((profile, index) => sanitizeProfile(profile, index))
+    .filter(Boolean);
+
+  // Any profile pointing at a missing airport falls back to the first one.
+  const providerIds = new Set(providers.map((provider) => provider.id));
+  for (const profile of profiles) {
+    if (!providerIds.has(profile.providerId)) {
+      profile.providerId = providers[0]?.id || '';
+    }
+  }
 
   return {
     converter: {
@@ -96,8 +120,57 @@ function sanitizeSettings(input = {}) {
       templateUrl: stringValue(converter.templateUrl, fallback.converter.templateUrl),
       extraParams: stringValue(converter.extraParams, fallback.converter.extraParams),
     },
-    profiles: profiles.map((profile, index) => sanitizeProfile(profile, index)).filter(Boolean),
+    providers,
+    profiles,
   };
+}
+
+function sanitizeProviders(input) {
+  const rawProviders = Array.isArray(input.providers) ? input.providers : null;
+
+  if (rawProviders) {
+    const seen = new Set();
+    const result = [];
+    for (const provider of rawProviders) {
+      if (!provider || typeof provider !== 'object') continue;
+      const baseId = normalizeProviderId(provider.id) || 'provider';
+      let id = baseId;
+      let suffix = 2;
+      while (seen.has(id)) {
+        id = `${baseId}-${suffix++}`;
+      }
+      seen.add(id);
+      result.push({
+        id,
+        name: stringValue(provider.name, id),
+        extraParams: stringValue(provider.extraParams, ''),
+      });
+    }
+    if (result.length) return result;
+  }
+
+  // Migration: old settings stored rules per profile and had no airports.
+  // Seed the default airports and backfill each one with the first non-empty
+  // rule string found on a profile mapped to it.
+  const providers = defaultProviders.map((provider) => ({ ...provider }));
+  const inputProfiles = Array.isArray(input.profiles) ? input.profiles : [];
+  const backfilled = new Set();
+  for (const profile of inputProfiles) {
+    if (!profile || typeof profile !== 'object') continue;
+    const extraParams = stringValue(profile.extraParams, '');
+    if (!extraParams) continue;
+    const providerId =
+      normalizeProviderId(profile.providerId) ||
+      defaultProfileProviderMap[normalizeProfileId(profile.id || '')] ||
+      providers[0].id;
+    if (backfilled.has(providerId)) continue;
+    const provider = providers.find((item) => item.id === providerId);
+    if (provider) {
+      provider.extraParams = extraParams;
+      backfilled.add(providerId);
+    }
+  }
+  return providers;
 }
 
 function mergeProfilesWithDefaults(profiles) {
@@ -127,6 +200,9 @@ function sanitizeProfile(profile, index) {
   const id = normalizeProfileId(profile.id || indexedFallback.id || `profile-${index + 1}`);
   const fallback = defaultProfiles.find((item) => item.id === id) || indexedFallback;
   const target = 'clash';
+  const providerId = normalizeProviderId(
+    profile.providerId || fallback.providerId || defaultProfileProviderMap[id] || '',
+  );
 
   return {
     id,
@@ -134,8 +210,7 @@ function sanitizeProfile(profile, index) {
     subscriptionUrl: stringValue(profile.subscriptionUrl || profile.url, fallback.subscriptionUrl || ''),
     path: normalizePublicPath(profile.path || profile.publicPath || fallback.path || defaultPublicPath(id, target)),
     target,
-    templateUrl: stringValue(profile.templateUrl, fallback.templateUrl || ''),
-    extraParams: stringValue(profile.extraParams, '') || fallback.extraParams || '',
+    providerId,
   };
 }
 
@@ -144,9 +219,17 @@ function validateSettings(settings) {
     throw validationError('订阅转换地址不能为空。');
   }
 
+  if (!settings.providers.length) {
+    throw validationError('至少需要一个机场。');
+  }
+
+  const providerIds = new Set(settings.providers.map((provider) => provider.id));
   for (const profile of settings.profiles) {
     if (!profile.path.startsWith('/')) {
       throw validationError(`${profile.name} 的公开路径必须以 / 开头。`);
+    }
+    if (!providerIds.has(profile.providerId)) {
+      throw validationError(`${profile.name} 绑定的机场不存在。`);
     }
   }
 }
@@ -157,15 +240,18 @@ function validationError(message) {
   return error;
 }
 
-function normalizeRuntimeProfile(profile, converter, index) {
+function normalizeRuntimeProfile(profile, converter, providers, index) {
   const sanitized = sanitizeProfile(profile, index);
   const extension = path.extname(sanitized.path) || defaultExtension(sanitized.target);
+  const provider =
+    providers.find((item) => item.id === sanitized.providerId) || providers[0] || { extraParams: '' };
 
   return {
     id: sanitized.id,
     name: sanitized.name,
     subscriptionUrl: sanitized.subscriptionUrl,
     publicPath: sanitized.path,
+    providerId: sanitized.providerId,
     downloadToken: '',
     rawUserAgent: config.rawUserAgent,
     converter: {
@@ -173,8 +259,8 @@ function normalizeRuntimeProfile(profile, converter, index) {
       input: converter.input || 'provider-url',
       url: converter.url,
       target: sanitized.target,
-      templateUrl: sanitized.templateUrl || converter.templateUrl,
-      extraParams: combineExtraParams(converter.extraParams, sanitized.extraParams),
+      templateUrl: converter.templateUrl,
+      extraParams: combineExtraParams(converter.extraParams, provider.extraParams),
     },
     paths: {
       raw: path.join(config.paths.profiles, `${sanitized.id}.raw.yaml`),
@@ -201,7 +287,8 @@ async function legacySettings() {
   if (await exists(legacyProfilesFile)) {
     const profiles = await readJson(legacyProfilesFile, []);
     if (Array.isArray(profiles) && profiles.length > 0) {
-      return sanitizeSettings({ ...fallback, profiles });
+      // Omit providers so sanitizeSettings migrates rules from the profiles.
+      return sanitizeSettings({ converter: fallback.converter, profiles });
     }
   }
 
@@ -228,14 +315,20 @@ function stringValue(value, fallback = '') {
   return String(value).trim();
 }
 
-function normalizeProfileId(value) {
-  const id = String(value)
+function normalizeId(value) {
+  return String(value)
     .trim()
     .toLowerCase()
     .replace(/[^a-z0-9_-]+/g, '-')
     .replace(/^-+|-+$/g, '');
+}
 
-  return id || 'profile';
+function normalizeProfileId(value) {
+  return normalizeId(value) || 'profile';
+}
+
+function normalizeProviderId(value) {
+  return normalizeId(value);
 }
 
 function normalizePublicPath(value) {

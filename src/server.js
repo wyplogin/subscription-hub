@@ -90,10 +90,11 @@ app.put('/api/settings', requireAdmin, async (req, res) => {
   }
 });
 
-app.post('/api/update', requireAdmin, async (_req, res) => {
+app.post('/api/update', requireAdmin, async (req, res) => {
   try {
-    const result = await updateSubscription();
-    res.json({ ...result, profiles: await buildProfiles(result.state, _req) });
+    const profileId = typeof req.body?.profileId === 'string' ? req.body.profileId.trim() : '';
+    const result = await updateSubscription(profileId || null);
+    res.json({ ...result, profiles: await buildProfiles(result.state, req) });
   } catch (error) {
     res.status(error.statusCode || 500).json({
       ok: false,

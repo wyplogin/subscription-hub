@@ -5,13 +5,13 @@ import { config, requireConfig } from './config.js';
 import { atomicWrite, backupFile, ensureDir, pruneBackups } from './fs-utils.js';
 import { enableProviderSubscription } from './provider/index.js';
 import { getRuntimeSettings, profileDownloadUrl } from './settings.js';
-import { updateState } from './state.js';
+import { getState, updateState } from './state.js';
 
 let runningUpdate = null;
 
-export function updateSubscription() {
+export function updateSubscription(profileId = null) {
   if (runningUpdate) return runningUpdate;
-  runningUpdate = runUpdate().finally(() => {
+  runningUpdate = runUpdate(profileId).finally(() => {
     runningUpdate = null;
   });
   return runningUpdate;
@@ -21,7 +21,7 @@ export function isUpdateRunning() {
   return Boolean(runningUpdate);
 }
 
-async function runUpdate() {
+async function runUpdate(profileId = null) {
   const logs = [];
   const log = (message) => logs.push({ at: new Date().toISOString(), message });
   const startedAt = new Date().toISOString();
@@ -32,18 +32,32 @@ async function runUpdate() {
   try {
     const settings = await getRuntimeSettings();
     requireConfig(settings.profiles.length > 0, 'No subscription profiles are configured.');
+
+    let targetProfiles = settings.profiles;
+    if (profileId) {
+      targetProfiles = settings.profiles.filter((profile) => profile.id === profileId);
+      requireConfig(
+        targetProfiles.length > 0,
+        `Subscription profile ${profileId} was not found or has no subscription URL.`,
+      );
+    }
+
     log('Starting provider subscription refresh.');
     await withTimeout(enableProviderSubscription(log), config.updateTimeoutMs, 'Provider enable step timed out.');
 
-    log(`Refreshing ${settings.profiles.length} subscription profile(s).`);
+    log(`Refreshing ${targetProfiles.length} subscription profile(s).`);
     const results = [];
-    for (const profile of settings.profiles) {
+    for (const profile of targetProfiles) {
       results.push(await updateProfile(profile, log));
     }
 
     await pruneBackups(config.paths.backups, config.keepBackups);
 
-    const profileResults = {};
+    // For a single-profile update, merge this run's result over the previous
+    // ones so the other profiles keep their last-known status. A full update
+    // replaces the map so results of removed profiles don't linger.
+    const previousState = await getState();
+    const profileResults = profileId ? { ...(previousState.profileResults || {}) } : {};
     for (const result of results) {
       profileResults[result.id] = result;
     }
@@ -51,23 +65,25 @@ async function runUpdate() {
     const failed = results.filter((result) => result.status === 'failed');
     const succeeded = results.filter((result) => result.status === 'idle');
     const firstSuccess = succeeded[0];
+    const now = new Date().toISOString();
+    const mergedFailedCount = Object.values(profileResults).filter((result) => result.status === 'failed').length;
 
-    const state = await updateState({
-      status: failed.length > 0 ? 'failed' : 'idle',
-      ...(succeeded.length > 0 ? { lastSucceededAt: new Date().toISOString() } : {}),
-      lastFailedAt: failed.length > 0 ? new Date().toISOString() : null,
-      lastError: failed.length > 0 ? `${failed.length} subscription profile(s) failed.` : null,
-      ...(firstSuccess
-        ? {
-            lastRawBytes: firstSuccess.lastRawBytes,
-            lastPublishedBytes: firstSuccess.lastPublishedBytes,
-            lastPublishedSha256: firstSuccess.lastPublishedSha256,
-            publishedUrl: firstSuccess.downloadUrl,
-          }
-        : {}),
+    const patch = {
+      status: mergedFailedCount > 0 ? 'failed' : 'idle',
+      lastError: mergedFailedCount > 0 ? `${mergedFailedCount} subscription profile(s) failed.` : null,
       profileResults,
       logs,
-    });
+    };
+    if (succeeded.length > 0) patch.lastSucceededAt = now;
+    if (failed.length > 0) patch.lastFailedAt = now;
+    if (firstSuccess) {
+      patch.lastRawBytes = firstSuccess.lastRawBytes;
+      patch.lastPublishedBytes = firstSuccess.lastPublishedBytes;
+      patch.lastPublishedSha256 = firstSuccess.lastPublishedSha256;
+      patch.publishedUrl = firstSuccess.downloadUrl;
+    }
+
+    const state = await updateState(patch);
 
     if (failed.length > 0) {
       const error = new Error(`${failed.length} subscription profile(s) failed.`);
